@@ -19,9 +19,11 @@ export class SekaiTransport {
   readonly options: CreateSekaiClientOptions
 
   private ctx: TransportContext = {}
+  private readonly debugEnabled: boolean
 
   constructor(options: CreateSekaiClientOptions) {
     this.options = options
+    this.debugEnabled = process.env.SEKAI_DEBUG === '1' || process.env.SEKAI_DEBUG?.toLowerCase() === 'true'
 
     const baseUrl = options.baseUrlOverride ?? GAME_ENDPOINT.get(options.region)
     if (!baseUrl)
@@ -115,7 +117,12 @@ export class SekaiTransport {
 
     let cookie = ''
     if (this.signature) {
-      const response = await this.signature.post('/signature').raw()
+      const sigPath = '/signature'
+      const response = await this.signature.post(sigPath).raw()
+      if (this.debugEnabled) {
+        const contentLength = response.headers.get('content-length')
+        console.debug(`[@wonderhoy/sekai-wrapper] status=${response.status} path=${sigPath} content-length=${contentLength ?? 'unknown'}`)
+      }
       if (response.ok) {
         const setCookie = response.headers.getSetCookie()
         if (setCookie)
@@ -156,9 +163,13 @@ export class SekaiTransport {
         if (nextSession)
           this.ctx.sessionToken = nextSession
 
+        const contentLength = response.headers.get('content-length')
+        if (this.debugEnabled)
+          console.debug(`[@wonderhoy/sekai-wrapper] status=${response.status} path=${url} content-length=${contentLength ?? 'unknown'}`)
+
         if (!response.ok)
           return null
-        const hasBody = response.headers.get('content-length') && response.headers.get('content-length') !== '0'
+        const hasBody = contentLength && contentLength !== '0'
         if (!hasBody)
           return null
 
