@@ -18,8 +18,12 @@ export class SekaiClient {
     this.transport = new SekaiTransport({ ...options, keyset })
   }
 
-  get userId() {
+  get userId(): string | undefined {
     return this.transport.getContext().userId
+  }
+
+  set userId(userId: string) {
+    this.transport.setContext({ userId })
   }
 
   setDevice(device: SekaiDevice): void {
