@@ -1,0 +1,36 @@
+---
+description: Transport, headers, retries, signature, and Msgpack/AES behavior
+---
+## Transport and Codec
+
+- **Location**
+  - Transport: [src/core/transport.ts](mdc:src/core/transport.ts)
+  - Codec: [src/core/msgpack.ts](mdc:src/core/msgpack.ts)
+  - Constants: [src/util/constants.ts](mdc:src/util/constants.ts)
+
+- **Context**
+  - `setContext({ device?, sessionToken?, userId?, version? })` merges a mutable context used for headers.
+  - `getContext()` returns the current context.
+
+- **Headers**
+  - Always sets: `x-platform`, `x-request-id`, `x-install-id`.
+  - Optional: `x-session-token` (captured from responses), device (`x-devicemodel`, `x-operatingsystem`), and version (`x-app-version`, `x-asset-version`, `x-data-version`, `x-app-hash`).
+  - Several placeholders (`x-ai`, `x-ga`, `x-kc`, `x-if`, `x-ma`) are sent empty.
+
+- **Signature cookie**
+  - For regions with `SIGNATURE_ENDPOINT`, a preflight request to `/signature` obtains cookies which are included as `Cookie` in the game request.
+
+- **Request flow**
+  - Body is MessagePack-encoded and AES-128-CBC encrypted by default when `options.json` is present.
+  - A timeout race is used if `timeoutMs` is configured.
+  - Retries: up to `retries` with delay `retryDelayMs` (defaults to 250ms) on errors; the last error is rethrown.
+  - Returns `null` for non-OK responses or empty bodies; otherwise decodes and returns the deserialized payload.
+
+- **Codec specifics**
+  - AES-128-CBC using region key/iv.
+  - Encode: MessagePack with `useBigInt64: true`, `forceFloat32: true`.
+  - Decode: MessagePack with `useBigInt64: true`.
+
+- **Encryption flags**
+  - Default is encrypted request and response. Override with `encrypt: false`/`decrypt: false` only if the endpoint clearly expects cleartext.
+

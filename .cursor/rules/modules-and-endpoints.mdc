@@ -1,0 +1,47 @@
+---
+description: Defining modules/endpoints and calling patterns
+---
+## Modules and Endpoints
+
+- **Define a module** using `defineModule(name, endpoints)` in `src/modules/your-module.ts`.
+  - See examples: [system.ts](mdc:src/modules/system.ts), [user.ts](mdc:src/modules/user.ts), [live.ts](mdc:src/modules/live.ts), [stories.ts](mdc:src/modules/stories.ts)
+
+- **Endpoint shape** (`EndpointConfig<TReq, TRes>`) in [registry.ts](mdc:src/registry.ts)
+  - `method`: HTTP verb
+  - `path`: may include `:userId` or other `:param` placeholders
+  - `encrypt?`, `decrypt?`: override defaults when the server expects cleartext
+
+- **Path parameters**
+  - `SekaiClient.$raw` replaces `:userId` with `client.userId` and `:param` with values from `params`.
+
+- **Query parameters**
+  - `undefined`/`null` are omitted, others are URL-encoded.
+
+- **Calling modules**
+  - After registration, each endpoint becomes a method that returns `Promise<TRes | null>`.
+  - Handle `null` to represent non-OK or empty responses.
+
+- **Typing**
+  - Current descriptors are untyped by default. For strongly-typed calls, prefer direct `$raw<TReq, TRes>(...)` usage at the call site, or add typed wrappers.
+
+- **Custom modules**
+  - Provide a modules map to `createSekaiClient(options, { yourModule })` to expose it as `client.yourModule`.
+
+## Example
+
+```ts
+// src/modules/gacha.ts
+import { defineModule } from '../registry.js'
+
+export const gachaModule = defineModule('gacha', {
+  draw: { method: 'POST', path: '/user/:userId/gacha/:bannerId', encrypt: true, decrypt: true },
+})
+
+// usage
+import { createSekaiClient } from '../sekai-client.js'
+import { gachaModule } from './gacha.js'
+
+const client = createSekaiClient({ region: 'en', platform: 'android' }, { gacha: gachaModule })
+const res = await client.gacha.draw({ params: { bannerId: 123 }, json: { count: 1 } })
+```
+

@@ -1,0 +1,25 @@
+---
+globs: *.ts,*.tsx
+description: ESM + NodeNext import/export rules specific to this repository
+---
+## ESM + NodeNext Rules
+
+- **ESM everywhere**: The project sets `"type": "module"` in `package.json` and `module: "nodenext"` in [tsconfig.json](mdc:tsconfig.json).
+
+- **Relative imports must include .js extensions**
+  - Do: `import { systemModule } from './modules/system.js'`
+  - Avoid: `import './modules/system'`
+
+- **Type-only imports**
+  - Use `import type { X } from '...'` when the import is only used as a type.
+
+- **Path alias `@/*`**
+  - `@/*` is configured for TypeScript tooling (`paths`), but Node does not resolve it at runtime.
+  - Prefer relative ESM imports with `.js` extensions inside `src` to ensure runtime compatibility.
+
+- **Node built-ins**
+  - Prefer explicit ESM specifiers like `node:crypto`, `node:buffer`.
+
+- **No CommonJS**
+  - Do not use `require`, `module.exports`, or `__dirname` patterns.
+

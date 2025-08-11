@@ -1,0 +1,60 @@
+---
+alwaysApply: true
+description: High-level project structure and entry points for sekai-wrapper
+---
+## Project Structure
+
+- **Entry points**
+  - `src/index.ts` re-exports public APIs from modules and client: [src/index.ts](mdc:src/index.ts)
+  - `SekaiClient` and `createSekaiClient` live in [src/sekai-client.ts](mdc:src/sekai-client.ts)
+
+- **Core**
+  - Transport and HTTP/signature handling: [src/core/transport.ts](mdc:src/core/transport.ts)
+  - AES-128-CBC + MessagePack codec: [src/core/msgpack.ts](mdc:src/core/msgpack.ts)
+
+- **Domain modules** (endpoint descriptors)
+  - System: [src/modules/system.ts](mdc:src/modules/system.ts)
+  - User: [src/modules/user.ts](mdc:src/modules/user.ts)
+  - Live: [src/modules/live.ts](mdc:src/modules/live.ts)
+  - Stories: [src/modules/stories.ts](mdc:src/modules/stories.ts)
+
+- **Types and registry**
+  - Shared types: [src/types.ts](mdc:src/types.ts)
+  - Module/endpoint registry helpers (`defineModule`, `ModuleApi`): [src/registry.ts](mdc:src/registry.ts)
+
+- **Constants**
+  - Region endpoints, user agents, default keysets: [src/util/constants.ts](mdc:src/util/constants.ts)
+
+- **Build/Config**
+  - TypeScript NodeNext ESM: [tsconfig.json](mdc:tsconfig.json)
+  - Package and scripts: [package.json](mdc:package.json)
+
+## Usage Overview
+
+- **Create a client**
+  ```ts
+  import { createSekaiClient } from './src/sekai-client.js'
+
+  const client = createSekaiClient({
+    region: 'en',
+    platform: 'android',
+    retries: 2,
+    timeoutMs: 10_000,
+  })
+
+  client.setVersion({ appVersion: '1.0.0', appHash: '00000000-0000-0000-0000-000000000000', assetVersion: '1.0.0.00', dataVersion: '1.0.0.00' })
+  client.setDevice({ model: 'Pixel 7', osVersion: 'Android 14', id: 'device-id' })
+  ```
+
+- **Built-in modules are auto-registered** (`system`, `user`, `live`, `stories`).
+  - Example: `await client.system.get()`
+
+- **Custom modules**
+  - Define with `defineModule` in `src/modules/your-module.ts` and supply as the second argument to `createSekaiClient(options, { yourModule })` for strongly-typed accessors.
+
+## Conventions
+
+- This project uses Node ESM with TypeScript `moduleResolution: nodenext`.
+- Use `.js` extensions in relative imports within `src` (see [src/index.ts](mdc:src/index.ts)).
+- Prefer `import type` for type-only imports.
+

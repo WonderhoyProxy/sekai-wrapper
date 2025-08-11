@@ -1,0 +1,56 @@
+{
+  "name": "@wonderhoy/sekai-wrapper",
+  "type": "module",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748",
+  "author": {
+    "name": "Wonderhoy Team",
+    "url": "https://github.com/WonderhoyProxy"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/WonderhoyProxy/sekai-wrapper#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WonderhoyProxy/sekai-wrapper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WonderhoyProxy/sekai-wrapper/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist/**"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:watch": "tsc -w -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "prepublishOnly": "pnpm run build && pnpm run typecheck"
+  },
+  "dependencies": {
+    "@fuman/fetch": "^0.1.1",
+    "@msgpack/msgpack": "^3.1.2"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.19.0",
+    "@types/node": "^22.17.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.33.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.6.3"
+  }
+}

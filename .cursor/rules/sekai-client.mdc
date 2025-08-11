@@ -1,0 +1,35 @@
+---
+description: SekaiClient usage and extension guide
+---
+## SekaiClient Guide
+
+- **Location**: [src/sekai-client.ts](mdc:src/sekai-client.ts)
+
+- **Construction**
+  - `createSekaiClient(options, modules?)` returns a `SekaiClient` with module APIs attached as properties.
+  - `options.keyset` is optional; when absent, it is derived from `DEFAULT_KEYSETS` by region.
+  - Throws if region has no keyset, or if user agent/endpoint is missing for the selected region/platform.
+
+- **Recommended boot sequence**
+  1. `const client = createSekaiClient({ region, platform, retries?, retryDelayMs?, timeoutMs? })`
+  2. `await client.setVersion()` to populate app version.
+  3. `client.setDevice({ model, osVersion, id })` to populate device headers.
+
+- **Calling endpoints**
+  - Built-in modules: `client.system.get()`, `client.user.create({ json })`, etc.
+  - Custom/raw: use `$raw<TReq, TRes>({ method, path, params?, query?, json?, encrypt?, decrypt? })`.
+    - `:userId` and any `:param` segments in `path` are replaced from `client.userId` and the `params` object.
+    - `query` is url-encoded; `undefined`/`null` values are omitted.
+    - Returns `Promise<TRes | null>`; `null` indicates a non-OK response or empty body.
+
+- **Session and headers**
+  - `SekaiTransport` captures `x-session-token` from responses and reuses it.
+  - Device/version context is sent via `x-devicemodel`, `x-operatingsystem`, `x-app-version`, `x-asset-version`, `x-data-version`, `x-app-hash`.
+
+- **Encryption/serialization**
+  - Requests are MessagePack-encoded and AES-128-CBC encrypted by default; set `encrypt: false`/`decrypt: false` only if the endpoint expects clear payloads.
+
+- **Extending modules**
+  - Supply a modules map as the second argument to `createSekaiClient(options, modules)` where each value is a `ModuleDescriptor` from `defineModule`.
+  - Those modules become enumerable properties on the client with call signatures inferred from the descriptor.
+
