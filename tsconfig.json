@@ -11,13 +11,19 @@
     },
     "strict": true,
     "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   }
   ,
+  "include": [
+    "src/**/*.ts"
+  ],
   "exclude": [
+    "dist",
     "src/test.ts",
     "**/*.test.ts",
     "**/__tests__/**"
