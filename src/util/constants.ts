@@ -1,6 +1,7 @@
 import type { SekaiKeyset, SekaiPlatform, SekaiRegion } from '../types.js'
 
 export const SEKAI_UNITY_VERSION = '2022.3.21f1'
+export const APP_HASH_URL = 'https://raw.githubusercontent.com/mos9527/sekai-apphash/refs/heads/master/{{ REGION }}/apphash.json'
 
 export const DEFAULT_KEYSETS = new Map<SekaiRegion, SekaiKeyset>([
   ['cn', { key: '6732666343305a637a4e394d544a3631', iv: '6d737833495630693958453575595a31' }],

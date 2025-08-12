@@ -1,0 +1,62 @@
+name: Preview Publish to GitHub Packages
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  publish-gpr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Use Node LTS ✨ (for install/build)
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install dependencies 📦️
+        run: pnpm install --frozen-lockfile
+
+      - name: Build 🔨
+        run: pnpm build
+
+      - name: Derive version and tag vars
+        id: vars
+        shell: bash
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          SANITIZED_BRANCH=${GITHUB_REF_NAME//\//-}
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+          echo "branch=$SANITIZED_BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Bump prerelease version (no git tag)
+        run: pnpm version prerelease --preid "gh.${{ steps.vars.outputs.branch }}.${{ steps.vars.outputs.short_sha }}" --no-git-tag-version
+
+      - name: Rename package for GPR scope
+        shell: bash
+        run: |
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.name='@wonderhoyteam/sekai-wrapper';p.publishConfig={...(p.publishConfig||{}),registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(p,null,2));console.log('Package name set to',p.name)"
+
+      - name: Configure npm for GitHub Packages
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          registry-url: https://npm.pkg.github.com
+          scope: '@wonderhoyteam'
+          always-auth: true
+
+      - name: Publish to GitHub Packages 🚀
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm publish --tag ${{ steps.vars.outputs.short_sha }} --registry https://npm.pkg.github.com --no-git-checks
+
+

@@ -1,11 +1,12 @@
+import { ffetchBase } from '@fuman/fetch'
 import { SekaiTransport } from './core/transport.js'
 import { liveModule } from './modules/live.js'
 import { storiesModule } from './modules/stories.js'
 import { systemModule } from './modules/system.js'
 import { userModule } from './modules/user.js'
 import type { EndpointConfig, ModuleApi, ModuleDescriptor, ModuleEndpoints } from './registry.js'
-import type { CreateSekaiClientOptions, RawRequestConfig, SekaiDevice, SekaiSystemAppVersion } from './types.js'
-import { DEFAULT_KEYSETS } from './util/constants.js'
+import type { CreateSekaiClientOptions, RawRequestConfig, SekaiDevice, SekaiPlatform, SekaiRegion, SekaiSystemAppVersion } from './types.js'
+import { APP_HASH_URL, DEFAULT_KEYSETS } from './util/constants.js'
 
 export class SekaiClient {
   private readonly transport: SekaiTransport
@@ -18,8 +19,20 @@ export class SekaiClient {
     this.transport = new SekaiTransport({ ...options, keyset })
   }
 
-  get userId() {
+  get region(): SekaiRegion {
+    return this.transport.options.region
+  }
+
+  get platform(): SekaiPlatform {
+    return this.transport.options.platform
+  }
+
+  get userId(): string | undefined {
     return this.transport.getContext().userId
+  }
+
+  set userId(userId: string) {
+    this.transport.setContext({ userId })
   }
 
   setDevice(device: SekaiDevice): void {
@@ -28,6 +41,21 @@ export class SekaiClient {
 
   setVersion(version: Partial<SekaiSystemAppVersion>): void {
     this.transport.setContext({ version })
+  }
+
+  async fetchLatestVersion (region: SekaiRegion, platform: SekaiPlatform) {
+    const url = APP_HASH_URL.replace('{{ REGION }}', region)
+    const response = await ffetchBase(url).json<any>()
+
+    const appKey = `production_${platform}`
+    const appData = response[appKey]
+    if (!appData)
+      throw new Error(`App data for ${platform} not found`)
+
+    return {
+      appVersion: appData.app_version,
+      appHash: appData.app_hash,
+    }
   }
 
   $raw<TReq = unknown, TRes = unknown>(config: RawRequestConfig<TReq>) {
