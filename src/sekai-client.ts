@@ -19,6 +19,14 @@ export class SekaiClient {
     this.transport = new SekaiTransport({ ...options, keyset })
   }
 
+  get region(): SekaiRegion {
+    return this.transport.options.region
+  }
+
+  get platform(): SekaiPlatform {
+    return this.transport.options.platform
+  }
+
   get userId(): string | undefined {
     return this.transport.getContext().userId
   }
