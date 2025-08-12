@@ -44,14 +44,14 @@ jobs:
       - name: Rename package for GPR scope
         shell: bash
         run: |
-          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.name='@wonderhoyproxy/sekai-wrapper';p.publishConfig={...(p.publishConfig||{}),registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(p,null,2));console.log('Package name set to',p.name)"
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.name='@wonderhoyteam/sekai-wrapper';p.publishConfig={...(p.publishConfig||{}),registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(p,null,2));console.log('Package name set to',p.name)"
 
       - name: Configure npm for GitHub Packages
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           registry-url: https://npm.pkg.github.com
-          scope: '@wonderhoyproxy'
+          scope: '@wonderhoyteam'
           always-auth: true
 
       - name: Publish to GitHub Packages 🚀
